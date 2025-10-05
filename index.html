@@ -6,64 +6,97 @@
   <title>Transform List</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background-color: #f4f4f9;
+      font-family: Arial, sans-serif;
     }
+
+    h3 {
+      margin: 10px;
+      text-align: center;
+    }
+
+    .controls {
+      text-align: center;
+      margin: 10px;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 0 5px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background-color: #0056b3;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+    }
+
     textarea {
-      width: 90%; /* Take up 90% of the page width */
-      max-width: 800px; /* Maximum width to prevent overly wide text areas */
-      height: 150px;
-      margin: 10px 0;
+      flex: 1;
       padding: 10px;
       font-size: 16px;
       border: 1px solid #ccc;
       border-radius: 5px;
       resize: none;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #007BFF;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    h3, h4 {
-      margin: 10px 0;
-    }
   </style>
 </head>
 <body>
   <h3>Transform List</h3>
-  <textarea id="input" placeholder="Enter values (one per line)"></textarea>
-  <button onclick="transformList()">Transform</button>
-  <h4>Output:</h4>
-  <textarea id="output" readonly></textarea>
+  <div class="controls">
+    <button onclick="transformList()">Transform</button>
+    <button onclick="copyOutput()">Copy</button>
+  </div>
+  <div class="container">
+    <textarea id="input" placeholder="Enter values (one per line)"></textarea>
+    <textarea id="output" readonly placeholder="Output will appear here"></textarea>
+  </div>
 
   <script>
     function transformList() {
       const input = document.getElementById("input").value;
-      const lines = input.split("\n");
-      const formatted = lines
-        .filter(line => line.trim() !== "") // Remove empty lines
-        .map(line => `'${line.trim()}'`) // Add quotes
-        .join(",\n"); // Join with commas and newlines
+      const lines = input.split("\n").filter(line => line.trim() !== "");
 
-      // Add parentheses around the entire string
-      const finalOutput = `(\n${formatted}\n)`;
+      const quoted = lines.map(line => `'${line.trim()}'`);
+
+      // Group into chunks of 15
+      const chunkSize = 15;
+      const grouped = [];
+      for (let i = 0; i < quoted.length; i += chunkSize) {
+        grouped.push(quoted.slice(i, i + chunkSize).join(", "));
+      }
+
+      // Format with parentheses around everything
+      const finalOutput = `(\n  ${grouped.join(",\n  ")}\n)`;
       document.getElementById("output").value = finalOutput;
+    }
+
+    function copyOutput() {
+      const output = document.getElementById("output");
+      if (!output.value.trim()) {
+        alert("Nothing to copy!");
+        return;
+      }
+      output.select();
+      output.setSelectionRange(0, 99999); // for mobile
+      navigator.clipboard.writeText(output.value)
+        .then(() => console.log("Copied to clipboard!"))
+        .catch(() => alert("Failed to copy!"));
     }
   </script>
 </body>
